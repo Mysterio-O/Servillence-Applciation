@@ -22,8 +22,15 @@ A production-grade multi-tenant employee activity monitoring platform for Window
 ```bash
 git clone <repo>
 cd surveil-win
+# configure env first (copy example and edit)
+cp .env.example .env
 docker compose up -d
 ```
+
+Notes:
+- Use .NET/Npgsql connection string format for `DB_CONNECTION_STRING`, for example:
+	`Host=...;Database=...;Username=...;Password=...;SSL Mode=Require;Channel Binding=Require`
+- `.env` is gitignored for secret safety.
 
 Services will be available at:
 - **Web Dashboard**: http://localhost:5173
@@ -51,6 +58,12 @@ cd apps/SurveilWin.Api
 dotnet run
 # API available at http://localhost:8080
 # Swagger at http://localhost:8080/swagger
+```
+
+If launch profiles override the port during `dotnet run`, use:
+
+```bash
+dotnet run --no-launch-profile --project apps/SurveilWin.Api/SurveilWin.Api.csproj
 ```
 
 ### Web Dashboard
