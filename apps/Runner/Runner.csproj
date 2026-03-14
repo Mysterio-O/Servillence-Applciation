@@ -1,0 +1,22 @@
+
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Agent.Win\Agent.Win.csproj" />
+    <ProjectReference Include="..\..\libs\Contracts\Contracts.csproj" />
+    <ProjectReference Include="..\..\libs\Processing\Processing.csproj" />
+    <ProjectReference Include="..\..\libs\Utils\Utils.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Copy the shared appsettings.json to the output directory -->
+    <Content Include="..\..\appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+</Project>
