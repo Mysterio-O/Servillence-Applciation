@@ -8,8 +8,13 @@ namespace SurveilWin.Api.Services;
 public class ActivityService : IActivityService
 {
     private readonly AppDbContext _db;
+    private readonly IScreenshotStorageService _screenshots;
 
-    public ActivityService(AppDbContext db) { _db = db; }
+    public ActivityService(AppDbContext db, IScreenshotStorageService screenshots)
+    {
+        _db = db;
+        _screenshots = screenshots;
+    }
 
     public async Task<int> SaveFrameBatchAsync(Guid employeeId, Guid orgId, FrameBatchRequest request)
     {
@@ -36,24 +41,35 @@ public class ActivityService : IActivityService
             await _db.SaveChangesAsync();
         }
 
-        var frames = request.Frames.Select(f => new ActivityFrame
+        var frames = new List<ActivityFrame>(request.Frames.Count);
+        foreach (var f in request.Frames)
         {
-            SessionId = session.Id,
-            EmployeeId = employeeId,
-            OrganizationId = orgId,
-            CapturedAt = f.CapturedAt,
-            ActiveApp = f.ActiveApp,
-            WindowTitle = f.WindowTitle,
-            AppCategory = f.AppCategory,
-            IsIdle = f.IsIdle,
-            IdleReason = f.IdleReason,
-            OcrText = f.OcrText,
-            BrowserDomain = f.BrowserDomain,
-            MonitorIndex = (short?)f.MonitorIndex,
-            CursorX = f.CursorX,
-            CursorY = f.CursorY,
-            CreatedAt = DateTime.UtcNow
-        }).ToList();
+            var thumbnailPath = await _screenshots.SaveBase64ScreenshotAsync(
+                f.ThumbnailBase64,
+                orgId,
+                employeeId,
+                f.CapturedAt);
+
+            frames.Add(new ActivityFrame
+            {
+                SessionId = session.Id,
+                EmployeeId = employeeId,
+                OrganizationId = orgId,
+                CapturedAt = f.CapturedAt,
+                ActiveApp = f.ActiveApp,
+                WindowTitle = f.WindowTitle,
+                AppCategory = f.AppCategory,
+                IsIdle = f.IsIdle,
+                IdleReason = f.IdleReason,
+                OcrText = f.OcrText,
+                BrowserDomain = f.BrowserDomain,
+                MonitorIndex = (short?)f.MonitorIndex,
+                CursorX = f.CursorX,
+                CursorY = f.CursorY,
+                ThumbnailPath = thumbnailPath,
+                CreatedAt = DateTime.UtcNow
+            });
+        }
 
         await _db.ActivityFrames.AddRangeAsync(frames);
         session.TotalFrames += frames.Count;

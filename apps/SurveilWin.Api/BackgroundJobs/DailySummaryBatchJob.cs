@@ -4,12 +4,12 @@ namespace SurveilWin.Api.BackgroundJobs;
 
 public class DailySummaryBatchJob : BackgroundService
 {
-    private readonly DailySummaryGenerator _generator;
+    private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<DailySummaryBatchJob> _logger;
 
-    public DailySummaryBatchJob(DailySummaryGenerator generator, ILogger<DailySummaryBatchJob> logger)
+    public DailySummaryBatchJob(IServiceScopeFactory scopeFactory, ILogger<DailySummaryBatchJob> logger)
     {
-        _generator = generator;
+        _scopeFactory = scopeFactory;
         _logger = logger;
     }
 
@@ -28,7 +28,12 @@ public class DailySummaryBatchJob : BackgroundService
 
             var yesterday = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-1));
             _logger.LogInformation("Running daily summary batch for {Date}", yesterday);
-            try { await _generator.GenerateForDateAsync(yesterday, stoppingToken); }
+            try
+            {
+                using var scope = _scopeFactory.CreateScope();
+                var generator = scope.ServiceProvider.GetRequiredService<DailySummaryGenerator>();
+                await generator.GenerateForDateAsync(yesterday, stoppingToken);
+            }
             catch (Exception ex) { _logger.LogError(ex, "DailySummaryBatchJob failed for {Date}", yesterday); }
         }
     }

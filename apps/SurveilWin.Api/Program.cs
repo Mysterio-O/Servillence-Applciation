@@ -48,6 +48,7 @@ builder.Services.AddScoped<IShiftService, ShiftService>();
 builder.Services.AddScoped<IActivityService, ActivityService>();
 builder.Services.AddScoped<IAuditService, AuditService>();
 builder.Services.AddScoped<IResourceAuthorizationService, ResourceAuthorizationService>();
+builder.Services.AddScoped<IScreenshotStorageService, LocalScreenshotStorageService>();
 
 // Email service
 var emailProvider = builder.Configuration["Email:Provider"] ?? "Log";

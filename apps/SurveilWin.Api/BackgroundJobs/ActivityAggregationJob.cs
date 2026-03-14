@@ -18,29 +18,29 @@ public class ActivityAggregationJob : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken ct)
     {
-        while (!ct.IsCancellationRequested)
-        {
-            await Task.Delay(TimeSpan.FromMinutes(5), ct);
-            try
-            {
-                using var scope = _services.CreateScope();
-                var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                var aggregator = scope.ServiceProvider.GetRequiredService<ActivityAggregatorService>();
+        await BackgroundJobRunner.RunPeriodicAsync(
+            TimeSpan.FromMinutes(5),
+            RunOnceAsync,
+            _logger,
+            nameof(ActivityAggregationJob),
+            ct,
+            runImmediately: false);
+    }
 
-                var activeShifts = await db.Shifts
-                    .Where(s => s.Status == ShiftStatus.Active)
-                    .Select(s => s.Id)
-                    .ToListAsync(ct);
+    private async Task RunOnceAsync(CancellationToken ct)
+    {
+        using var scope = _services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var aggregator = scope.ServiceProvider.GetRequiredService<ActivityAggregatorService>();
 
-                foreach (var shiftId in activeShifts)
-                    await aggregator.AggregateFramesForShiftAsync(shiftId, ct);
+        var activeShifts = await db.Shifts
+            .Where(s => s.Status == ShiftStatus.Active)
+            .Select(s => s.Id)
+            .ToListAsync(ct);
 
-                _logger.LogInformation("Activity aggregation completed for {Count} active shifts", activeShifts.Count);
-            }
-            catch (Exception ex) when (!ct.IsCancellationRequested)
-            {
-                _logger.LogError(ex, "Activity aggregation job error");
-            }
-        }
+        foreach (var shiftId in activeShifts)
+            await aggregator.AggregateFramesForShiftAsync(shiftId, ct);
+
+        _logger.LogInformation("Activity aggregation completed for {Count} active shifts", activeShifts.Count);
     }
 }
