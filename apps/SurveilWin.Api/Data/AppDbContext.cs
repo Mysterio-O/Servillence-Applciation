@@ -48,6 +48,7 @@ public class AppDbContext : DbContext
             e.Property(u => u.Role).HasConversion<string>().HasMaxLength(50).IsRequired();
             e.Property(u => u.IsActive).HasDefaultValue(true);
             e.Property(u => u.InviteToken).HasMaxLength(200);
+            e.Property(u => u.RefreshTokenHash).HasMaxLength(128);
             e.Property(u => u.CreatedAt).HasDefaultValueSql("NOW()");
             e.Property(u => u.UpdatedAt).HasDefaultValueSql("NOW()");
             e.HasIndex(u => new { u.OrganizationId, u.Email }).IsUnique();

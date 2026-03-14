@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using SurveilWin.Api.Data;
@@ -29,13 +30,49 @@ public class AuthService : IAuthService
         if (user == null || !VerifyPassword(password, user.PasswordHash))
             return null;
 
-        user.LastLoginAt = DateTime.UtcNow;
+        return await IssueAuthResponseAsync(user, updateLastLogin: true);
+    }
+
+    public async Task<AuthResponse?> RefreshTokenAsync(string refreshToken)
+    {
+        if (string.IsNullOrEmpty(refreshToken)) return null;
+
+        var now = DateTime.UtcNow;
+        var hash = HashRefreshToken(refreshToken);
+
+        var user = await _db.Users
+            .Include(u => u.Organization)
+            .FirstOrDefaultAsync(u =>
+                u.IsActive &&
+                u.RefreshTokenHash == hash &&
+                u.RefreshTokenExpiresAt != null &&
+                u.RefreshTokenExpiresAt > now);
+
+        if (user == null) return null;
+
+        return await IssueAuthResponseAsync(user);
+    }
+
+    public async Task<AuthResponse> IssueAuthResponseAsync(User user, bool updateLastLogin = false)
+    {
+        var now = DateTime.UtcNow;
+        var refreshToken = GenerateRefreshToken();
+        var refreshTokenDays = int.Parse(_config["Jwt:RefreshTokenDays"] ?? "30");
+
+        if (updateLastLogin)
+            user.LastLoginAt = now;
+
+        user.RefreshTokenHash = HashRefreshToken(refreshToken);
+        user.RefreshTokenIssuedAt = now;
+        user.RefreshTokenExpiresAt = now.AddDays(refreshTokenDays);
+        user.UpdatedAt = now;
+
         await _db.SaveChangesAsync();
 
         return new AuthResponse
         {
             AccessToken = GenerateJwtToken(user),
-            RefreshToken = GenerateRefreshToken(),
+            RefreshToken = refreshToken,
             User = new UserDto
             {
                 Id = user.Id,
@@ -43,15 +80,9 @@ public class AuthService : IAuthService
                 FullName = user.FullName,
                 Role = user.Role.ToString(),
                 OrganizationId = user.OrganizationId,
-                OrgName = user.Organization.Name
+                OrgName = user.Organization?.Name
             }
         };
-    }
-
-    public async Task<AuthResponse?> RefreshTokenAsync(string refreshToken)
-    {
-        if (string.IsNullOrEmpty(refreshToken)) return null;
-        return null; // TODO: Implement full refresh token storage
     }
 
     public string GenerateJwtToken(User user)
@@ -87,6 +118,13 @@ public class AuthService : IAuthService
         using var rng = RandomNumberGenerator.Create();
         rng.GetBytes(bytes);
         return Convert.ToBase64String(bytes);
+    }
+
+    private static string HashRefreshToken(string refreshToken)
+    {
+        var bytes = Encoding.UTF8.GetBytes(refreshToken);
+        var hash = SHA256.HashData(bytes);
+        return Convert.ToHexString(hash);
     }
 
     public string HashPassword(string password) => BCrypt.Net.BCrypt.HashPassword(password, workFactor: 12);

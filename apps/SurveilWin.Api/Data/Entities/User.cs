@@ -17,6 +17,9 @@ public class User
     public string? InviteToken { get; set; }
     public DateTime? InviteExpires { get; set; }
     public DateTime? LastLoginAt { get; set; }
+    public string? RefreshTokenHash { get; set; }
+    public DateTime? RefreshTokenIssuedAt { get; set; }
+    public DateTime? RefreshTokenExpiresAt { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
     public string FullName => $"{FirstName} {LastName}";

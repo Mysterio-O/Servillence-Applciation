@@ -63,21 +63,8 @@ public class AuthController : ControllerBase
         user.UpdatedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync();
 
-        var token = _auth.GenerateJwtToken(user);
-        return Ok(new AuthResponse
-        {
-            AccessToken = token,
-            RefreshToken = _auth.GenerateRefreshToken(),
-            User = new UserDto
-            {
-                Id = user.Id,
-                Email = user.Email,
-                FullName = user.FullName,
-                Role = user.Role.ToString(),
-                OrganizationId = user.OrganizationId,
-                OrgName = user.Organization.Name
-            }
-        });
+        var authResponse = await _auth.IssueAuthResponseAsync(user, updateLastLogin: true);
+        return Ok(authResponse);
     }
 
     private static bool IsValidPassword(string pw) =>
