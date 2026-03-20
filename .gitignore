@@ -54,6 +54,11 @@ secrets.json
 *.backup
 *~
 
+# Windows Zone.Identifier metadata files - DO NOT COMMIT
+*:Zone.Identifier
+*.Zone.Identifier
+"*\357\200\272Zone.Identifier"
+
 # Credentials and sensitive information - NEVER commit these
 ADMIN_EMPLOYEE_CREDENTIALS.txt
 credentials.txt
