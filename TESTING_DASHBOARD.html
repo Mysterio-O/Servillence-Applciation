@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SurveilWin Testing Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .status-card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .status-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .status-card.healthy {
+            border-left: 5px solid #10b981;
+        }
+
+        .status-card.running {
+            border-left: 5px solid #3b82f6;
+        }
+
+        .status-card.ready {
+            border-left: 5px solid #f59e0b;
+        }
+
+        .status-card h3 {
+            color: #1f2937;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .badge-healthy {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge-ready {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-running {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .status-content {
+            font-size: 0.95em;
+            color: #6b7280;
+            line-height: 1.6;
+        }
+
+        .status-content strong {
+            color: #1f2937;
+        }
+
+        .url-link {
+            display: inline-block;
+            margin-top: 10px;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 8px 12px;
+            background: #f0f9ff;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .url-link:hover {
+            background: #e0f2fe;
+            color: #764ba2;
+        }
+
+        .testing-section {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+
+        .testing-section h2 {
+            color: #1f2937;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .test-item {
+            background: #f9fafb;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 7px;
+            border-left: 3px solid #667eea;
+        }
+
+        .test-item h4 {
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+
+        .test-item p {
+            color: #6b7280;
+            font-size: 0.95em;
+            margin-bottom: 8px;
+        }
+
+        .code-block {
+            background: #1f2937;
+            color: #10b981;
+            padding: 12px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            overflow-x: auto;
+            margin-top: 8px;
+        }
+
+        .credentials-box {
+            background: #fff7ed;
+            border: 2px solid #ea580c;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .credentials-box h3 {
+            color: #ea580c;
+            margin-bottom: 15px;
+        }
+
+        .credential-item {
+            background: white;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border-left: 3px solid #ea580c;
+        }
+
+        .credential-item strong {
+            color: #1f2937;
+        }
+
+        .credential-item em {
+            color: #667eea;
+            font-style: normal;
+            font-weight: 600;
+        }
+
+        .checklist {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: #f3f4f6;
+            border-radius: 6px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .checklist-item:hover {
+            background: #e5e7eb;
+        }
+
+        .checklist-item input {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+            cursor: pointer;
+        }
+
+        .checklist-item label {
+            cursor: pointer;
+            color: #1f2937;
+            flex: 1;
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            padding: 20px;
+            margin-top: 40px;
+        }
+
+        .success-banner {
+            background: white;
+            border-left: 5px solid #10b981;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+
+        .success-banner h3 {
+            color: #10b981;
+            margin-bottom: 10px;
+        }
+
+        .workflow-diagram {
+            background: #f9fafb;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-family: monospace;
+            color: #1f2937;
+            overflow-x: auto;
+            font-size: 0.85em;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 SurveilWin Testing Dashboard</h1>
+            <p>Multi-Tenant Employee Activity Monitoring Platform</p>
+        </div>
+
+        <!-- Success Banner -->
+        <div class="success-banner">
+            <h3>✅ All Services Running & Healthy</h3>
+            <p>
+                <strong>Build Status:</strong> Complete (0 errors)<br>
+                <strong>Date:</strong> 2026-03-20<br>
+                <strong>Ready for Testing:</strong> YES
+            </p>
+        </div>
+
+        <!-- Service Status -->
+        <div class="status-grid">
+            <!-- Web Dashboard -->
+            <div class="status-card running">
+                <h3>🌐 Web Dashboard</h3>
+                <span class="status-badge badge-running">RUNNING</span>
+                <div class="status-content">
+                    <strong>React 18 + Vite</strong><br>
+                    Management interface for admins and managers
+                    <a href="http://localhost:5173" class="url-link" target="_blank">→ Open Dashboard</a>
+                </div>
+            </div>
+
+            <!-- API Server -->
+            <div class="status-card healthy">
+                <h3>⚙️ API Server</h3>
+                <span class="status-badge badge-healthy">HEALTHY</span>
+                <div class="status-content">
+                    <strong>ASP.NET Core 8</strong><br>
+                    REST API with multi-tenant support
+                    <a href="http://localhost:8080/health" class="url-link" target="_blank">→ Check Health</a>
+                    <a href="http://localhost:8080/swagger" class="url-link" target="_blank">→ Swagger Docs</a>
+                </div>
+            </div>
+
+            <!-- Database -->
+            <div class="status-card healthy">
+                <h3>🗄️ PostgreSQL Database</h3>
+                <span class="status-badge badge-healthy">RUNNING</span>
+                <div class="status-content">
+                    <strong>PostgreSQL 16</strong><br>
+                    Data persistence & organization
+                    <br><code style="color: #667eea;">localhost:5432</code>
+                </div>
+            </div>
+
+            <!-- AI Engine -->
+            <div class="status-card running">
+                <h3>🤖 Ollama AI</h3>
+                <span class="status-badge badge-running">RUNNING</span>
+                <div class="status-content">
+                    <strong>llama3.2 Model</strong><br>
+                    AI summaries and analysis
+                    <br><code style="color: #667eea;">localhost:11434</code>
+                </div>
+            </div>
+
+            <!-- Desktop App -->
+            <div class="status-card ready">
+                <h3>🖥️ Dashboard.Win</h3>
+                <span class="status-badge badge-ready">READY TO RUN</span>
+                <div class="status-content">
+                    <strong>.NET 8 WPF</strong><br>
+                    Employee desktop UI
+                    <a href="#desktop-testing" class="url-link">→ Test Instructions</a>
+                </div>
+            </div>
+
+            <!-- Agent -->
+            <div class="status-card ready">
+                <h3>👁️ Agent.Win</h3>
+                <span class="status-badge badge-ready">READY</span>
+                <div class="status-content">
+                    <strong>.NET 8 WinForms</strong><br>
+                    Background monitoring service
+                    <a href="#agent-testing" class="url-link">→ More Info</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test Credentials -->
+        <div class="credentials-box">
+            <h3>🔐 Test Accounts</h3>
+            <div class="credential-item">
+                <strong>Admin Account</strong><br>
+                Email: <em>admin@surveilwin.com</em><br>
+                Password: <em>password</em><br>
+                <small>Full access across all organizations</small>
+            </div>
+            <div class="credential-item">
+                <strong>Employee Account</strong><br>
+                Email: <em>employee@surveilwin.com</em><br>
+                Password: <em>password</em><br>
+                <small>Can only see own activity</small>
+            </div>
+        </div>
+
+        <!-- Web Dashboard Testing -->
+        <div class="testing-section">
+            <h2>🌐 Web Dashboard Testing</h2>
+
+            <div class="test-item">
+                <h4>① Admin Login & Dashboard</h4>
+                <p>Verify admin can access all features</p>
+                <div class="checklist">
+                    <label class="checklist-item">
+                        <input type="checkbox">
+                        <span>Login with admin account</span>
+                    </label>
+                    <label class="checklist-item">
+                        <input type="checkbox">
+                        <span>View all employees</span>
+                    </label>
+                    <label class="checklist-item">
+                        <input type="checkbox">
+                        <span>Check activity feed</span>
+                    </label>
+                    <label class="checklist-item">
+                        <input type="checkbox">
+                        <span>View productivity metrics</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="test-item">
+                <h4>② Employee Access (Data Isolation)</h4>
+                <p>Verify employees can ONLY see own data</p>
+                <div class="checklist">
+                    <label class="checklist-item">
+                        <input type="checkbox">
+                        <span>Logout from admin</span>
+                    </label>
+                    <label class="checklist-item">
+                        <input type="checkbox">
+                        <span>Login with employee</span>
+                    </label>
+                    <label class="checklist-item">
+                        <input type="checkbox">
+                        <span>Can see own activity</span>
+                    </label>
+                    <label class="checklist-item">
+                        <input type="checkbox">
+                        <span>Cannot see other employees</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="test-item">
+                <h4>③ Features to Check</h4>
+                <div class="checklist">
+                    <label class="checklist-item">
+                        <input type="checkbox">
+                        <span>Dashboard home page</span>
+                    </label>
+                    <label class="checklist-item">
+                        <input type="checkbox">
+                        <span>Employee list view</span>
+                    </label>
+                    <label class="checklist-item">
+                        <input type="checkbox">
+                        <span>Activity reports</span>
+                    </label>
+                    <label class="checklist-item">
+                        <input type="checkbox">
+                        <span>Shift history</span>
+                    </label>
+                    <label class="checklist-item">
+                        <input type="checkbox">
+                        <span>Settings/Profile</span>
+                    </label>
+                    <label class="checklist-item">
+                        <input type="checkbox">
+                        <span>Logout functionality</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Desktop App Testing -->
+        <div class="testing-section" id="desktop-testing">
+            <h2>🖥️ Desktop Application Testing</h2>
+
+            <div class="test-item">
+                <h4>① Launch Dashboard.Win</h4>
+                <p>Start the employee desktop application</p>
+                <div class="code-block">cd "C:\Users\skrab\Downloads\surveil-win\surveil-win"
+dotnet run --project apps/Dashboard.Win/Dashboard.Win.csproj</div>
+            </div>
+
+            <div class="test-item">
+                <h4>② Test Login Flow</h4>
+                <div class="checklist">
+                    <label class="checklist-item">
+                        <input type="checkbox">
+                        <span>App launches (WPF window)</span>
+                    </label>
+                    <label class="checklist-item">
+                        <input type="checkbox">
+                        <span>Login form displays</span>
+                    </label>
+                    <label class="checklist-item">
+                        <input type="checkbox">
+                        <span>Enter: employee@surveilwin.com</span>
+                    </label>
+                    <label class="checklist-item">
+                        <input type="checkbox">
+                        <span>Enter: password</span>
+                    </label>
+                    <label class="checklist-item">
+                        <input type="checkbox">
+                        <span>Click Sign In</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="test-item">
+                <h4>③ Test Shift Management</h4>
+                <div class="checklist">
+                    <label class="checklist-item">
+                        <input type="checkbox">
+                        <span>Shift panel appears</span>
+                    </label>
+                    <label class="checklist-item">
+                        <input type="checkbox">
+                        <span>Click "Start Shift"</span>
+                    </label>
+                    <label class="checklist-item">
+                        <input type="checkbox">
+                        <span>Monitoring panel loads</span>
+                    </label>
+                    <label class="checklist-item">
+                        <input type="checkbox">
+                        <span>Shift timer starts</span>
+                    </label>
+                    <label class="checklist-item">
+                        <input type="checkbox">
+                        <span>Agent status shows "active"</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="test-item">
+                <h4>④ Monitor Real-Time Activity</h4>
+                <p>While shift is active, use your computer normally and observe:</p>
+                <div class="checklist">
+                    <label class="checklist-item">
+                        <input type="checkbox">
+                        <span>Frame count increments</span>
+                    </label>
+                    <label class="checklist-item">
+                        <input type="checkbox">
+                        <span>Current app shown in UI</span>
+                    </label>
+                    <label class="checklist-item">
+                        <input type="checkbox">
+                        <span>Activity log updates</span>
+                    </label>
+                    <label class="checklist-item">
+                        <input type="checkbox">
+                        <span>Upload status shows OK</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="test-item">
+                <h4>⑤ End Shift</h4>
+                <div class="checklist">
+                    <label class="checklist-item">
+                        <input type="checkbox">
+                        <span>Click "End Shift" button</span>
+                    </label>
+                    <label class="checklist-item">
+                        <input type="checkbox">
+                        <span>Monitoring panel closes</span>
+                    </label>
+                    <label class="checklist-item">
+                        <input type="checkbox">
+                        <span>Back to shift panel</span>
+                    </label>
+                    <label class="checklist-item">
+                        <input type="checkbox">
+                        <span>Can start new shift</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- API Testing -->
+        <div class="testing-section">
+            <h2>⚙️ API Testing</h2>
+
+            <div class="test-item">
+                <h4>① Check Health & Documentation</h4>
+                <div class="checklist">
+                    <label class="checklist-item">
+                        <input type="checkbox" onclick="testHealth()">
+                        <span><a href="http://localhost:8080/health" target="_blank">Test Health Endpoint</a></span>
+                    </label>
+                    <label class="checklist-item">
+                        <input type="checkbox">
+                        <span><a href="http://localhost:8080/swagger" target="_blank">Open Swagger UI</a></span>
+                    </label>
+                    <label class="checklist-item">
+                        <input type="checkbox">
+                        <span>Review all available endpoints</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="test-item">
+                <h4>② Test Authentication</h4>
+                <p>Login endpoint should accept credentials and return JWT token</p>
+                <div class="code-block">POST /api/auth/login
+{
+  "email": "admin@surveilwin.com",
+  "password": "password"
+}</div>
+            </div>
+
+            <div class="test-item">
+                <h4>③ Test Multi-Tenant Isolation</h4>
+                <div class="checklist">
+                    <label class="checklist-item">
+                        <input type="checkbox">
+                        <span>GET /api/users returns only org users</span>
+                    </label>
+                    <label class="checklist-item">
+                        <input type="checkbox">
+                        <span>GET /api/shifts returns only org shifts</span>
+                    </label>
+                    <label class="checklist-item">
+                        <input type="checkbox">
+                        <span>GET /api/activity returns only org activity</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Agent Testing -->
+        <div class="testing-section" id="agent-testing">
+            <h2>👁️ Agent.Win Monitoring Service</h2>
+
+            <div class="test-item">
+                <h4>Agent Verification (Automatic)</h4>
+                <p>The Agent.Win service runs automatically when a shift is active. To verify:</p>
+                <div class="checklist">
+                    <label class="checklist-item">
+                        <input type="checkbox">
+                        <span>Start shift in Dashboard.Win</span>
+                    </label>
+                    <label class="checklist-item">
+                        <input type="checkbox">
+                        <span>Open Windows Task Manager (Ctrl+Shift+Esc)</span>
+                    </label>
+                    <label class="checklist-item">
+                        <input type="checkbox">
+                        <span>Look for "Agent.Win" process</span>
+                    </label>
+                    <label class="checklist-item">
+                        <input type="checkbox">
+                        <span>Check CPU: ~5-15% (normal)</span>
+                    </label>
+                    <label class="checklist-item">
+                        <input type="checkbox">
+                        <span>Check RAM: ~100-300 MB (normal)</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="test-item">
+                <h4>Generated Files</h4>
+                <p>Check these directories for captured data:</p>
+                <div class="code-block">📁 data/sessions/
+  └─ Contains session and activity data
+
+📁 data/screenshots/
+  └─ Contains captured thumbnails and full screenshots</div>
+            </div>
+        </div>
+
+        <!-- Integration Testing -->
+        <div class="testing-section">
+            <h2>🔗 Integration Testing</h2>
+
+            <div class="test-item">
+                <h4>End-to-End Data Flow</h4>
+                <div class="workflow-diagram">
+1. Start shift in Dashboard.Win
+2. Agent.Win captures activity in background
+3. View real-time data in Desktop App
+4. Login to Web Dashboard as admin
+5. See employee activity in feed
+6. Check that employee cannot see others' data
+7. End shift
+8. Verify data persisted in database
+                </div>
+            </div>
+
+            <div class="test-item">
+                <h4>Multi-User Scenario</h4>
+                <p>Testing with multiple users (if available)</p>
+                <div class="checklist">
+                    <label class="checklist-item">
+                        <input type="checkbox">
+                        <span>Start shift on Computer A</span>
+                    </label>
+                    <label class="checklist-item">
+                        <input type="checkbox">
+                        <span>Start shift on Computer B (different user)</span>
+                    </label>
+                    <label class="checklist-item">
+                        <input type="checkbox">
+                        <span>Admin sees both users in dashboard</span>
+                    </label>
+                    <label class="checklist-item">
+                        <input type="checkbox">
+                        <span>Each user only sees own activity</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Troubleshooting -->
+        <div class="testing-section">
+            <h2>🔧 Troubleshooting</h2>
+
+            <div class="test-item">
+                <h4>API Not Responding</h4>
+                <div class="code-block"># Check health
+curl http://localhost:8080/health
+
+# View logs
+docker compose logs api
+
+# Restart
+docker compose restart api</div>
+            </div>
+
+            <div class="test-item">
+                <h4>Desktop App Connection Error</h4>
+                <p>Check that appsettings.json has correct API URL and .env is configured</p>
+                <div class="code-block">// apps/Dashboard.Win/appsettings.json
+{
+  "ApiBaseUrl": "http://localhost:8080"
+}</div>
+            </div>
+
+            <div class="test-item">
+                <h4>Database Connection Issues</h4>
+                <div class="code-block"># Check PostgreSQL
+docker compose ps
+
+# View database logs
+docker compose logs postgres</div>
+            </div>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="testing-section">
+            <h2>🔗 Quick Links</h2>
+            <div class="status-grid" style="margin-top: 20px;">
+                <a href="http://localhost:5173" target="_blank" class="url-link" style="display: block; text-align: center; padding: 20px; background: #f0f9ff; border-radius: 8px; grid-column: span 1;">
+                    🌐<br>Web Dashboard<br>http://localhost:5173
+                </a>
+                <a href="http://localhost:8080" target="_blank" class="url-link" style="display: block; text-align: center; padding: 20px; background: #f0f9ff; border-radius: 8px; grid-column: span 1;">
+                    ⚙️<br>API Server<br>http://localhost:8080
+                </a>
+                <a href="http://localhost:8080/swagger" target="_blank" class="url-link" style="display: block; text-align: center; padding: 20px; background: #f0f9ff; border-radius: 8px; grid-column: span 1;">
+                    📚<br>Swagger Docs<br>/swagger
+                </a>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>✅ SurveilWin Testing Guide | Generated 2026-03-20 | All Services Running</p>
+            <p style="margin-top: 10px; font-size: 0.9em;">
+                For detailed documentation, see: PROJECT_ANALYSIS.md | DATA_FLOW_GUIDE.md
+            </p>
+        </div>
+    </div>
+
+    <script>
+        function testHealth() {
+            fetch('http://localhost:8080/health')
+                .then(r => r.json())
+                .then(d => alert('✅ API Healthy!\n\n' + JSON.stringify(d, null, 2)))
+                .catch(e => alert('❌ API Error: ' + e.message));
+        }
+    </script>
+</body>
+</html>
