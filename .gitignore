@@ -53,3 +53,13 @@ secrets.json
 # Backup files
 *.backup
 *~
+
+# Credentials and sensitive information - NEVER commit these
+ADMIN_EMPLOYEE_CREDENTIALS.txt
+credentials.txt
+test.credentials
+*.key
+*.pem
+*.pfx
+.env.local
+.env.*.local
